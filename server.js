@@ -42,7 +42,14 @@ app.use(helmet({
 ));
 app.use(compression());
 app.use(morgan("combined"));
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
+// app.use(cors({ origin: CLIENT_URL, credentials: true }));
+app.use(cors({
+  origin: [
+    "https://eduepic.xyz",
+    "https://www.eduepic.xyz"
+  ],
+  credentials: true
+}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(
