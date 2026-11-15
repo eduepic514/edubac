@@ -76,7 +76,7 @@ app.use("/api/v1/newsletter", newsletterRoutes);
 app.use("/api/v1/contact", contactRoutes);
 
 // --- SEO endpoints (served at root, not versioned) ---
-app.use("/", sitemapRoutes); // exposes /sitemap.xml, /robots.txt, /rss.xml
+// app.use("/", sitemapRoutes); // exposes /sitemap.xml, /robots.txt, /rss.xml
 
 // --- Health Check ---
 app.get("/health", (_req, res) => res.json({ status: "ok", uptime: process.uptime() }));
