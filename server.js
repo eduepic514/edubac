@@ -35,11 +35,11 @@ dns.setServers(['8.8.8.8', '8.8.4.4']);
 const app = express();
 
 // --- Global Middlewares ---
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-}
-
-));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(compression());
 app.use(morgan("combined"));
 // app.use(cors({ origin: CLIENT_URL, credentials: true }));
@@ -88,7 +88,7 @@ app.use(errorHandler);
 // --- Start Server ---
 const start = async () => {
   await connectDatabase();
-  app.listen(PORT, () => console.log(`EduEpic API running on port ${PORT}`));
+ app.listen(PORT, () => console.log(`EduEpic API running on port ${PORT}`));
 };
 
 start();
