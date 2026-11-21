@@ -45,8 +45,8 @@ app.use(morgan("combined"));
 // app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(cors({
   origin: [
-    // "https://eduepic.xyz",
-    // "https://www.eduepic.xyz",
+    "https://eduepic.xyz",
+    "https://www.eduepic.xyz",
     "http://localhost:3000",  
   ],
   credentials: true
