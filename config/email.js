@@ -1,4 +1,11 @@
+
+
 const nodemailer = require('nodemailer');
+const dns = require('dns');                          // ✅ NEW
+
+// ✅ IPv4 priority — Node 17+ ka DNS fix
+dns.setDefaultResultOrder('ipv4first');              // ✅ NEW
+dns.setServers(['1.1.1.1', '8.8.8.8']);    
 
 // Create transporter
 const transporter = nodemailer.createTransport({
