@@ -29,8 +29,7 @@ const contactRoutes = require("./routes/contactRoutes");
 const sitemapRoutes = require("./routes/sitemapRoutes");
 
 // ✅ DNS Servers set karein (Atlas connection ke liye)
-
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
 
@@ -42,17 +41,21 @@ app.use(
 );
 app.use(compression());
 app.use(morgan("combined"));
-// app.use(cors({ origin: CLIENT_URL, credentials: true }));
-app.use(cors({
-  origin: [
-    "https://eduepic.xyz",
-    "https://www.eduepic.xyz",
-    "http://localhost:3000",  
-  ],
-  credentials: true
-}));
+
+app.use(
+  cors({
+    origin: [
+      "https://eduepic.xyz",
+      "https://www.eduepic.xyz",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -62,11 +65,9 @@ app.use(
   })
 );
 
-
-// ✅ Serve uploaded files statically - MAKE SURE THIS EXISTS
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-console.log('✅ Static files served from:', path.join(__dirname, 'uploads'));
+// ✅ Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+console.log("✅ Static files served from:", path.join(__dirname, "uploads"));
 
 // --- API Routes (versioned) ---
 app.use("/api/v1/auth", authRoutes);
@@ -80,7 +81,9 @@ app.use("/api/v1/contact", contactRoutes);
 app.use("/", sitemapRoutes); // exposes /sitemap.xml, /robots.txt, /rss.xml
 
 // --- Health Check ---
-app.get("/health", (_req, res) => res.json({ status: "ok", uptime: process.uptime() }));
+app.get("/health", (_req, res) =>
+  res.json({ status: "ok", uptime: process.uptime() })
+);
 
 // --- Error Handlers ---
 app.use(notFound);
@@ -89,7 +92,9 @@ app.use(errorHandler);
 // --- Start Server ---
 const start = async () => {
   await connectDatabase();
- app.listen(PORT, () => console.log(`EduEpic API running on port ${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`EduEpic API running on port ${PORT}`);
+  });
 };
 
 start();

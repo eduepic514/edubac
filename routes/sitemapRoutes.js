@@ -1,4 +1,3 @@
-
 const router = require("express").Router();
 const Blog = require("../models/Blog");
 const { SUPPORTED_LANGUAGES } = require("../config/env");
@@ -19,8 +18,7 @@ const escapeXML = (value = "") => {
 };
 
 // Encode individual URL path segments
-const encodeSlug = (slug) =>
-  encodeURIComponent(String(slug));
+const encodeSlug = (slug) => encodeURIComponent(String(slug));
 
 // Get translations from the MongoDB Map
 const getTranslation = (translations, language) => {
@@ -38,7 +36,7 @@ router.get("/sitemap.xml", async (_req, res) => {
 
     const urls = [];
 
-    // Important public website pages
+    // Important public website pages (NO admin/login)
     const staticPages = [
       "/",
       "/blog",
@@ -54,6 +52,8 @@ router.get("/sitemap.xml", async (_req, res) => {
       urls.push(`
         <url>
           <loc>${escapeXML(`${SITE_URL}${path}`)}</loc>
+          <changefreq>weekly</changefreq>
+          <priority>${path === "/" ? "1.0" : "0.8"}</priority>
         </url>
       `);
     });
@@ -66,31 +66,32 @@ router.get("/sitemap.xml", async (_req, res) => {
       // English translation is required
       if (!english?.slug) continue;
 
-      const englishUrl =
-        `${SITE_URL}/blog/${encodeSlug(english.slug)}`;
+      const englishUrl = `${SITE_URL}/blog/${encodeSlug(english.slug)}`;
 
       // Include only languages with actual translations
-      const availableLanguages = (
-        SUPPORTED_LANGUAGES || ["en"]
-      ).filter((language) => {
-        return Boolean(getTranslation(translations, language)?.slug);
-      });
+      const availableLanguages = (SUPPORTED_LANGUAGES || ["en"]).filter(
+        (language) => {
+          return Boolean(getTranslation(translations, language)?.slug);
+        }
+      );
 
       // Hreflang alternate links
-      const alternates = availableLanguages.map((language) => {
-        const languageUrl =
-          language === "en"
-            ? englishUrl
-            : `${englishUrl}?lang=${encodeURIComponent(language)}`;
+      const alternates = availableLanguages
+        .map((language) => {
+          const languageUrl =
+            language === "en"
+              ? englishUrl
+              : `${englishUrl}?lang=${encodeURIComponent(language)}`;
 
-        return `
+          return `
           <xhtml:link
             rel="alternate"
             hreflang="${escapeXML(language)}"
             href="${escapeXML(languageUrl)}"
           />
         `;
-      }).join("");
+        })
+        .join("");
 
       // x-default points to English
       const defaultAlternate = `
@@ -111,6 +112,8 @@ router.get("/sitemap.xml", async (_req, res) => {
               ? `<lastmod>${new Date(lastModified).toISOString()}</lastmod>`
               : ""
           }
+          <changefreq>weekly</changefreq>
+          <priority>0.9</priority>
           ${alternates}
           ${defaultAlternate}
         </url>
@@ -118,21 +121,21 @@ router.get("/sitemap.xml", async (_req, res) => {
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-      <urlset
-        xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
-        ${urls.join("")}
-      </urlset>`;
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  ${urls.join("")}
+</urlset>`;
 
     res.status(200);
     res.set("Content-Type", "application/xml; charset=utf-8");
     res.set("Cache-Control", "public, max-age=300");
     return res.send(xml);
-
   } catch (error) {
     console.error("Sitemap generation error:", error);
 
-    return res.status(500)
+    return res
+      .status(500)
       .type("text/plain")
       .send("Unable to generate sitemap");
   }
@@ -146,9 +149,7 @@ Allow: /
 Sitemap: ${SITE_URL}/sitemap.xml
 `;
 
-  res.status(200)
-    .type("text/plain")
-    .send(robots);
+  res.status(200).type("text/plain").send(robots);
 });
 
 // RSS feed
@@ -161,43 +162,40 @@ router.get("/rss.xml", async (_req, res) => {
       .limit(20)
       .select("translations createdAt");
 
-    const items = blogs.map((blog) => {
-      const english = getTranslation(blog.translations, "en");
+    const items = blogs
+      .map((blog) => {
+        const english = getTranslation(blog.translations, "en");
 
-      if (!english?.slug) return "";
+        if (!english?.slug) return "";
 
-      const url =
-        `${SITE_URL}/blog/${encodeSlug(english.slug)}`;
+        const url = `${SITE_URL}/blog/${encodeSlug(english.slug)}`;
 
-      return `
+        return `
         <item>
           <title>${escapeXML(english.title || "")}</title>
           <link>${escapeXML(url)}</link>
           <description>${escapeXML(english.excerpt || "")}</description>
+          <pubDate>${new Date(blog.createdAt).toUTCString()}</pubDate>
         </item>
       `;
-    }).join("");
+      })
+      .join("");
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
-      <rss version="2.0">
-        <channel>
-          <title>EduEpic</title>
-          <link>${SITE_URL}</link>
-          <description>Global scholarships, admissions and student resources.</description>
-          ${items}
-        </channel>
-      </rss>`;
+<rss version="2.0">
+  <channel>
+    <title>EduEpic</title>
+    <link>${SITE_URL}</link>
+    <description>Global scholarships, admissions and student resources.</description>
+    ${items}
+  </channel>
+</rss>`;
 
-    res.status(200)
-      .type("application/rss+xml")
-      .send(rss);
-
+    res.status(200).type("application/rss+xml").send(rss);
   } catch (error) {
     console.error("RSS generation error:", error);
 
-    res.status(500)
-      .type("text/plain")
-      .send("Unable to generate RSS feed");
+    res.status(500).type("text/plain").send("Unable to generate RSS feed");
   }
 });
 
